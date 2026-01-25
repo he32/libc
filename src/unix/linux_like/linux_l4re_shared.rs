@@ -953,7 +953,7 @@ pub const PTHREAD_PROCESS_PRIVATE: c_int = 0;
 pub const PTHREAD_PROCESS_SHARED: c_int = 1;
 pub const PTHREAD_INHERIT_SCHED: c_int = 0;
 pub const PTHREAD_EXPLICIT_SCHED: c_int = 1;
-#[cfg(not(target_env = "uclibc"))]
+#[cfg(not(all(target_os = "l4re", target_env = "uclibc")))]
 pub const __SIZEOF_PTHREAD_COND_T: usize = 48;
 
 // netinet/in.h
@@ -1214,12 +1214,6 @@ cfg_if! {
         pub const MFD_HUGE_16GB: c_uint = 0x88000000;
         pub const MFD_HUGE_MASK: c_uint = 63;
         pub const MFD_HUGE_SHIFT: c_uint = 26;
-
-        pub const NLMSG_NOOP: c_int = 0x1;
-        pub const NLMSG_ERROR: c_int = 0x2;
-        pub const NLMSG_DONE: c_int = 0x3;
-        pub const NLMSG_OVERRUN: c_int = 0x4;
-        pub const NLMSG_MIN_TYPE: c_int = 0x10;
     }
 }
 

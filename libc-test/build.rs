@@ -1640,7 +1640,6 @@ fn test_dragonflybsd(target: &str) {
             "sem_t" => true,
             // mqd_t is a pointer on DragonFly
             "mqd_t" => true,
-
             _ => false,
         }
     });
@@ -4501,15 +4500,22 @@ fn test_linux(target: &str) {
     });
 
     let c_enums = [
-        "tpacket_versions",
-        "proc_cn_mcast_op",
-        "proc_cn_event",
+        "membarrier_cmd",
         "pid_type",
+        "proc_cn_event",
+        "proc_cn_mcast_op",
+        "tpacket_versions",
     ];
     cfg.alias_is_c_enum(move |e| c_enums.contains(&e));
 
     // FIXME(libc): `pid_type` and `proc_cn_event` is hidden.
     cfg.skip_c_enum(|e| e == "pid_type" || e == "proc_cn_event");
+
+    cfg.skip_signededness(move |c| match c {
+        // FIXME(1.0): uses the enum default signedness
+        "membarrier_cmd" => true,
+        _ => false,
+    });
 
     cfg.skip_fn(move |function| {
         let name = function.ident();
@@ -5482,16 +5488,6 @@ fn test_aix(target: &str) {
             // header does not define a separate standalone union type for it.
             ("ld_info", "_file") => true,
 
-            // On AIX, when _ALL_SOURCE is defined, the types of the following fields
-            // differ from those used when _XOPEN_SOURCE is defined. The former uses
-            // 'struct st_timespec', while the latter uses 'struct timespec'.
-            ("stat", "st_atim") => true,
-            ("stat", "st_mtim") => true,
-            ("stat", "st_ctim") => true,
-            ("stat64", "st_atim") => true,
-            ("stat64", "st_mtim") => true,
-            ("stat64", "st_ctim") => true,
-
             _ => false,
         }
     });
@@ -5503,12 +5499,6 @@ fn test_aix(target: &str) {
 
             // The field 'data' is actually a unnamed union in the AIX header.
             "pollfd_ext" if field.ident() == "data" => true,
-
-            // On AIX, <stat.h> declares 'tv_nsec' as 'long', but the
-            // underlying system calls return a 32-bit value in both 32-bit
-            // and 64-bit modes. In the 'libc' crate it is declared as 'i32'
-            // to match the system call. Skip this field.
-            "timespec" if field.ident() == "tv_nsec" => true,
 
             _ => false,
         }
